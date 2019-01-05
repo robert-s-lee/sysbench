@@ -55,8 +55,10 @@ sysbench.cmdline.options = {
       {"Number of DELETE/INSERT combinations per transaction", 1},
    range_selects =
       {"Enable/disable all range SELECT queries", true},
+   auto_inc_ddl =
+      {"For DDL, use AUTO_INCREMENT Primary Key even if client-generated ID is used", false},
    auto_inc =
-   {"Use AUTO_INCREMENT column as Primary Key (for MySQL), " ..
+      {"Use AUTO_INCREMENT column as Primary Key (for MySQL), " ..
        "or its alternatives in other DBMS. When disabled, use " ..
        "client-generated IDs", true},
    create_table_options =
@@ -168,7 +170,7 @@ function create_table(drv, con, table_num)
 
    if drv:name() == "mysql"
    then
-      if sysbench.opt.auto_inc then
+      if sysbench.opt.auto_inc or sysbench.opt.auto_inc_ddl then
          id_def = "INTEGER NOT NULL AUTO_INCREMENT"
       else
          id_def = "INTEGER NOT NULL"
@@ -176,7 +178,7 @@ function create_table(drv, con, table_num)
       engine_def = "/*! ENGINE = " .. sysbench.opt.mysql_storage_engine .. " */"
    elseif drv:name() == "pgsql"
    then
-      if not sysbench.opt.auto_inc then
+      if not (sysbench.opt.auto_inc or sysbench.opt.auto_inc_ddl)  then
          id_def = "INTEGER NOT NULL"
       elseif pgsql_variant == 'redshift' then
         id_def = "INTEGER IDENTITY(1,1)"
